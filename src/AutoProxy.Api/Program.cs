@@ -23,7 +23,7 @@ namespace AutoProxy.Api
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables().Build();
             AppSettings appSettings = config.Get<AppSettings>();
-            
+
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -43,7 +43,7 @@ namespace AutoProxy.Api
                 .Configure(app =>
                 {
                     app.ConfigureCors(appSettings);
-                    
+
                     app.Run(async context =>
                     {
                         string path = "/";
@@ -57,7 +57,7 @@ namespace AutoProxy.Api
                             context.Response.StatusCode = 403;
                             return;
                         }
-                        var fullPath = new Uri(new Uri(appSettings.BaseUrl), context.Request.Path.Value);
+                        var fullPath = new Uri(new Uri(appSettings.BaseUrl), path);
 
                         // Prepare builder.
                         var url = fullPath.AbsoluteUri;
@@ -96,7 +96,7 @@ namespace AutoProxy.Api
                                 case "PATCH":
                                     break;
                             }
-                            
+
                         }
                         if (responseMessageTask != null)
                         {
