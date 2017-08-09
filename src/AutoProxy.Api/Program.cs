@@ -103,8 +103,9 @@ namespace AutoProxy.Api
                             {
                                 context.Response.Headers[header.Key] = new StringValues(header.Value.ToArray());
                             }
-                            context.Response.Body = await res.Content.ReadAsStreamAsync();
                             context.Response.StatusCode = (int)res.StatusCode;
+                            Stream responseBufferStream = await res.Content.ReadAsStreamAsync();
+                            await responseBufferStream.CopyToAsync(context.Response.Body);
                             cli.Dispose();
                         }
                     });
