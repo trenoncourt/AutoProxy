@@ -27,6 +27,7 @@ namespace AutoProxy.Api
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
                 .ConfigureLogging(loggerFactory =>
                 {
                     if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
@@ -45,17 +46,19 @@ namespace AutoProxy.Api
                     
                     app.Run(async context =>
                     {
-                        var fullPath = new Uri(appSettings.BaseUrl);
+                        string path = "/";
                         if (context.Request.Path.HasValue)
                         {
-                            if (appSettings.WhiteList != null && !appSettings.WhiteList.Split(';').Contains(context.Request.Path.Value))
-                            {
-                                context.Response.StatusCode = 403;
-                                return;
-                            }
-                            fullPath = new Uri(fullPath, context.Request.Path.Value);
+                            path = context.Request.Path.Value;
                         }
-                        
+
+                        if (appSettings.WhiteList != null && !appSettings.WhiteList.Split(';').Contains(path))
+                        {
+                            context.Response.StatusCode = 403;
+                            return;
+                        }
+                        var fullPath = new Uri(new Uri(appSettings.BaseUrl), context.Request.Path.Value);
+
                         // Prepare builder.
                         var url = fullPath.AbsoluteUri;
                         HttpClient cli = new HttpClient();
@@ -76,18 +79,17 @@ namespace AutoProxy.Api
                         Task<HttpResponseMessage> responseMessageTask = null;
                         if (context.Request.Body != null)
                         {
-                            //string json = context.ReadBodyAsJson();
                             switch (context.Request.Method)
                             {
                                 case "GET":
 
-                                    responseMessageTask = cli.GetAsync(url);//  url.GetAsync();
+                                    responseMessageTask = cli.GetAsync(url);
                                     break;
                                 case "POST":
                                     string contentTypeHeader = context.Request.Headers["Content-Type"];
                                     var streamContent = new StreamContent(context.Request.Body);
                                     streamContent.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrEmpty(contentTypeHeader) ? "text/plain" : contentTypeHeader);
-                                    responseMessageTask = cli.PostAsync(url, streamContent);//.PostJsonAsync(json);
+                                    responseMessageTask = cli.PostAsync(url, streamContent);
                                     break;
                                 case "PUT":
                                     break;
