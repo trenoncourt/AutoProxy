@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Primitives;
+using System.Text.RegularExpressions;
 
 namespace AutoProxy.Api
 {
@@ -51,7 +52,7 @@ namespace AutoProxy.Api
                             path = context.Request.Path.Value;
                         }
 
-                        if (appSettings.WhiteList != null && !appSettings.WhiteList.Split(';').Contains(path))
+                        if (appSettings.WhiteList != null && !appSettings.WhiteList.Split(';').Any(template => Regex.IsMatch(path, template)))
                         {
                             context.Response.StatusCode = 403;
                             return;
@@ -60,6 +61,10 @@ namespace AutoProxy.Api
 
                         // Prepare builder.
                         var url = fullPath.AbsoluteUri;
+                        if (context.Request.QueryString.HasValue)
+                        {
+                            url += context.Request.QueryString.Value;
+                        }
                         HttpClient cli = new HttpClient();
 
                         // Add Auth if needed.
@@ -81,7 +86,6 @@ namespace AutoProxy.Api
                             switch (context.Request.Method)
                             {
                                 case "GET":
-
                                     responseMessageTask = cli.GetAsync(url);
                                     break;
                                 case "POST":
