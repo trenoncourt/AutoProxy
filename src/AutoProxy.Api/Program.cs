@@ -67,6 +67,12 @@ namespace AutoProxy.Api
                         }
                         HttpClient cli = new HttpClient();
 
+                        // Forward headers
+                        foreach (var header in context.Request.Headers)
+                        {
+                            cli.DefaultRequestHeaders.Add(header.Key, header.Value.ToString());
+                        }
+
                         // Add Auth if needed.
                         if (appSettings.Auth != null)
                         {
