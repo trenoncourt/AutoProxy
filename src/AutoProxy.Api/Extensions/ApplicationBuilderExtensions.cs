@@ -36,6 +36,11 @@ namespace AutoProxy.Api.Extensions
                     {
                         builder.AllowAnyOrigin();
                     }
+                    
+                    if (settings.Cors.Credentials)
+                    {
+                        builder.AllowCredentials();
+                    }
                 });
             }
         }

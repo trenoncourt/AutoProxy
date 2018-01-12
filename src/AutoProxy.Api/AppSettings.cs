@@ -22,6 +22,8 @@ namespace AutoProxy.Api
         public string Origins { get; set; }
 
         public string Headers { get; set; }
+
+        public bool Credentials { get; set; }
     }
 
     public class AuthSettings
