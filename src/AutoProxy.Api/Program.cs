@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Primitives;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace AutoProxy.Api
 {
@@ -68,10 +69,7 @@ namespace AutoProxy.Api
                         HttpClient cli = new HttpClient();
 
                         // Forward headers
-                        foreach (var header in context.Request.Headers)
-                        {
-                            cli.DefaultRequestHeaders.Add(header.Key, header.Value.ToString());
-                        }
+                        cli.AddHeaders(context.Request.Headers);
 
                         // Add Auth if needed.
                         if (appSettings.Auth != null)
