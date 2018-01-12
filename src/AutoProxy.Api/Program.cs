@@ -27,7 +27,7 @@ namespace AutoProxy.Api
             AppSettings appSettings = config.Get<AppSettings>();
 
             var host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options => options.AddServerHeader = false)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureLogging(loggerFactory =>
                 {
