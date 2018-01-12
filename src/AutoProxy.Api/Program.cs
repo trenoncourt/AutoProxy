@@ -12,13 +12,12 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Primitives;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace AutoProxy.Api
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             IConfigurationRoot config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -28,7 +27,6 @@ namespace AutoProxy.Api
 
             var host = new WebHostBuilder()
                 .UseKestrel(options => options.AddServerHeader = false)
-                .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureLogging(loggerFactory =>
                 {
                     if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
