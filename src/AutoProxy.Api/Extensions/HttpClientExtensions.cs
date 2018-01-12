@@ -7,6 +7,7 @@ namespace AutoProxy.Api.Extensions
     {
         public static void AddHeaders(this HttpClient httpClient, IHeaderDictionary headers)
         {
+            httpClient.DefaultRequestHeaders.Clear();
             foreach (var header in headers)
             {
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value.ToString());
