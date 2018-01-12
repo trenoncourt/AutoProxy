@@ -64,24 +64,13 @@ namespace AutoProxy.Api
                         {
                             url += context.Request.QueryString.Value;
                         }
-                        HttpClient cli = new HttpClient();
+                        
+                        // Create client with auth if needed
+                        HttpClient cli = HttpClientExtensions.GetWithAuth(appSettings);
 
                         // Forward headers
                         cli.AddHeaders(context.Request.Headers);
-
-                        // Add Auth if needed.
-                        if (appSettings.Auth != null)
-                        {
-                            switch (appSettings.Auth.AuthType)
-                            {
-                                case AuthType.Bearer:
-                                    if (!string.IsNullOrEmpty(appSettings.Auth.Token))
-                                    {
-                                        cli.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appSettings.Auth.Token);
-                                    }
-                                    break;
-                            }
-                        }
+                        
                         Task<HttpResponseMessage> responseMessageTask = null;
                         if (context.Request.Body != null)
                         {
@@ -91,9 +80,7 @@ namespace AutoProxy.Api
                                     responseMessageTask = cli.GetAsync(url);
                                     break;
                                 case "POST":
-                                    string contentTypeHeader = context.Request.Headers["Content-Type"];
                                     var streamContent = new StreamContent(context.Request.Body);
-                                    streamContent.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrEmpty(contentTypeHeader) ? "text/plain" : contentTypeHeader);
                                     responseMessageTask = cli.PostAsync(url, streamContent);
                                     break;
                                 case "PUT":

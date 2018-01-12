@@ -38,15 +38,26 @@ namespace AutoProxy.Api
                 {
                     return Api.AuthType.Bearer;
                 }
+                if (Type.Equals("ntlm", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Api.AuthType.Ntlm;
+                }
                 return null;
             }
         }
 
         public string Token { get; set; }
+
+        public string User { get; set; }
+
+        public string Password { get; set; }
+
+        public string Domain { get; set; }
     }
 
     public enum AuthType
     {
-        Bearer
+        Bearer,
+        Ntlm
     }
 }
