@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Primitives;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace AutoProxy.Api
 {
@@ -80,7 +81,9 @@ namespace AutoProxy.Api
                                     responseMessageTask = cli.GetAsync(url);
                                     break;
                                 case "POST":
+                                    context.Request.EnableRewind();
                                     var streamContent = new StreamContent(context.Request.Body);
+                                    streamContent.Headers.ContentLength = context.Request.ContentLength;
                                     responseMessageTask = cli.PostAsync(url, streamContent);
                                     break;
                                 case "PUT":
@@ -92,7 +95,16 @@ namespace AutoProxy.Api
                         }
                         if (responseMessageTask != null)
                         {
-                            HttpResponseMessage res = await responseMessageTask;
+                            HttpResponseMessage res;
+                            try
+                            {
+                                res = await responseMessageTask;
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                throw;
+                            }
                             foreach (var header in res.Content.Headers)
                             {
                                 context.Response.Headers[header.Key] = new StringValues(header.Value.ToArray());
