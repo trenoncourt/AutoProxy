@@ -2,17 +2,13 @@
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 using AutoProxy.Api.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
 using Microsoft.Extensions.Primitives;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http.Internal;
 
 namespace AutoProxy.Api
 {
@@ -46,74 +42,24 @@ namespace AutoProxy.Api
 
                     app.Run(async context =>
                     {
-                        string path = "/";
-                        if (context.Request.Path.HasValue)
-                        {
-                            path = context.Request.Path.Value;
-                        }
-
-                        if (appSettings.WhiteList != null && !appSettings.WhiteList.Split(';').Any(template => Regex.IsMatch(path, template)))
+                        if (context.Request.IsInWhiteList(appSettings))
                         {
                             context.Response.StatusCode = 403;
                             return;
                         }
-                        var fullPath = new Uri(new Uri(appSettings.BaseUrl), path);
-
-                        // Prepare builder.
-                        var url = fullPath.AbsoluteUri;
-                        if (context.Request.QueryString.HasValue)
-                        {
-                            url += context.Request.QueryString.Value;
-                        }
                         
                         // Create client with auth if needed
-                        HttpClient cli = HttpClientExtensions.GetWithAuth(appSettings);
-
-                        // Forward headers
-                        cli.AddHeaders(context.Request.Headers);
+                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings);
                         
-                        Task<HttpResponseMessage> responseMessageTask = null;
-                        if (context.Request.Body != null)
-                        {
-                            switch (context.Request.Method)
-                            {
-                                case "GET":
-                                    responseMessageTask = cli.GetAsync(url);
-                                    break;
-                                case "POST":
-                                    context.Request.EnableRewind();
-                                    var streamContent = new StreamContent(context.Request.Body);
-                                    streamContent.Headers.ContentLength = context.Request.ContentLength;
-                                    responseMessageTask = cli.PostAsync(url, streamContent);
-                                    break;
-                                case "PUT":
-                                    break;
-                                case "PATCH":
-                                    break;
-                            }
-
-                        }
-                        if (responseMessageTask != null)
-                        {
-                            HttpResponseMessage res;
-                            try
-                            {
-                                res = await responseMessageTask;
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                                throw;
-                            }
-                            foreach (var header in res.Content.Headers)
-                            {
-                                context.Response.Headers[header.Key] = new StringValues(header.Value.ToArray());
-                            }
-                            context.Response.StatusCode = (int)res.StatusCode;
-                            Stream responseBufferStream = await res.Content.ReadAsStreamAsync();
-                            await responseBufferStream.CopyToAsync(context.Response.Body);
-                            cli.Dispose();
-                        }
+                        // Create request
+                        HttpRequestMessage request = context.Request.ToHttpRequestMessage(appSettings);
+                        
+                        // Get response
+                        HttpResponseMessage response = await client.SendAsync(request);
+                        
+                        // Forward response to client
+                        await context.Response.SetResponse(response);
+                        client.Dispose();
                     });
                 })
                 .Build();

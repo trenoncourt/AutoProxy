@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
@@ -7,19 +8,9 @@ namespace AutoProxy.Api.Extensions
 {
     public static class HttpClientExtensions
     {
-        public static void AddHeaders(this HttpClient httpClient, IHeaderDictionary headers)
-        {
-            var authenticationHeaderValue = httpClient.DefaultRequestHeaders.Authorization;
-            httpClient.DefaultRequestHeaders.Clear();
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value.ToString());
-            }
-            httpClient.DefaultRequestHeaders.Authorization = authenticationHeaderValue;
-        }
-        
         public static HttpClient GetWithAuth(AppSettings appSettings)
         {
+            HttpClient httpClient = null;
             if (appSettings.Auth != null)
             {
                 switch (appSettings.Auth.AuthType)
@@ -27,7 +18,7 @@ namespace AutoProxy.Api.Extensions
                     case AuthType.Bearer:
                         if (!string.IsNullOrEmpty(appSettings.Auth.Token))
                         {
-                            var httpClient = new HttpClient();
+                            httpClient = new HttpClient();
                             httpClient.DefaultRequestHeaders.Authorization =
                                 new AuthenticationHeaderValue("Bearer", appSettings.Auth.Token);
                             return httpClient;
@@ -38,11 +29,14 @@ namespace AutoProxy.Api.Extensions
                         handler.Credentials = new NetworkCredential(appSettings.Auth.User, appSettings.Auth.Password,
                             appSettings.Auth.Domain);
                         ;
-                        return new HttpClient(handler);
+                        httpClient = new HttpClient(handler);
+                        break;
                 }
             }
 
-            return new HttpClient();
+            httpClient = httpClient ?? new HttpClient();
+            httpClient.DefaultRequestHeaders.Clear();
+            return httpClient;
         }
     }
 }
