@@ -60,6 +60,8 @@ namespace AutoProxy.Api
         public string Password { get; set; }
 
         public string Domain { get; set; }
+
+        public bool UseImpersonation { get; set; }
     }
 
     public enum AuthType

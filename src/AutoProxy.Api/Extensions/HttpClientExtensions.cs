@@ -24,9 +24,15 @@ namespace AutoProxy.Api.Extensions
                         break;
                     case AuthType.Ntlm:
                         var handler = new HttpClientHandler();
-                        handler.Credentials = new NetworkCredential(appSettings.Auth.User, appSettings.Auth.Password,
-                            appSettings.Auth.Domain);
-                        ;
+                        if (appSettings.Auth.UseImpersonation)
+                        {
+                            handler.UseDefaultCredentials = true;
+                        }
+                        else
+                        {
+                            handler.Credentials = new NetworkCredential(appSettings.Auth.User, appSettings.Auth.Password,
+                                appSettings.Auth.Domain);
+                        }
                         httpClient = new HttpClient(handler);
                         break;
                 }
