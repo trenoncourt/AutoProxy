@@ -11,6 +11,13 @@ namespace AutoProxy.Api
         public CorsSettings Cors { get; set; }
 
         public AuthSettings Auth { get; set; }
+
+        public ServerSettings Server { get; set; }
+    }
+    
+    public class ServerSettings
+    {
+        public bool UseIIS { get; set; }
     }
     
     public class CorsSettings

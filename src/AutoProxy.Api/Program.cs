@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using AutoProxy.Api.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 
 namespace AutoProxy.Api
 {
@@ -22,8 +20,15 @@ namespace AutoProxy.Api
                 .AddEnvironmentVariables().Build();
             AppSettings appSettings = config.Get<AppSettings>();
 
-            var host = new WebHostBuilder()
-                .UseKestrel(options => options.AddServerHeader = false)
+            IWebHostBuilder builder = new WebHostBuilder()
+                .UseKestrel(options => options.AddServerHeader = false);
+
+            if (appSettings.Server.UseIIS)
+            {
+                builder.UseIISIntegration();
+            }
+            
+            var host = builder
                 .ConfigureLogging(loggerFactory =>
                 {
                     if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
