@@ -80,7 +80,6 @@ namespace AutoProxy.Api
                             
                             WindowsIdentity.RunImpersonated(user.AccessToken, () =>
                             {
-                                var impersonatedUser = WindowsIdentity.GetCurrent();
                                 response = client.SendAsync(request).GetAwaiter().GetResult();
                             });
                         }

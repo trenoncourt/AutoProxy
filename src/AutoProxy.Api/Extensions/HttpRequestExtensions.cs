@@ -51,9 +51,12 @@ namespace AutoProxy.Api.Extensions
             }
             
             var httpRequestMesage = new HttpRequestMessage(new HttpMethod(request.Method), url);
+            
             httpRequestMesage.Headers.Clear();
             foreach (var header in request.Headers)
             {
+                if (appSettings.Headers.Remove.Contains(header.Value.ToString()))
+                    continue;
                 httpRequestMesage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToString());
             }
             

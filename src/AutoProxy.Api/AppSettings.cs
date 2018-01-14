@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace AutoProxy.Api
 {
@@ -13,6 +14,8 @@ namespace AutoProxy.Api
         public AuthSettings Auth { get; set; }
 
         public ServerSettings Server { get; set; }
+
+        public HeadersSettings Headers { get; set; }
     }
     
     public class ServerSettings
@@ -31,6 +34,11 @@ namespace AutoProxy.Api
         public string Headers { get; set; }
 
         public bool Credentials { get; set; }
+    }
+
+    public class HeadersSettings
+    {
+        public IEnumerable<string> Remove { get; set; }
     }
 
     public class AuthSettings
