@@ -12,7 +12,7 @@ namespace AutoProxy.Api.Extensions
                 {
                     if (settings.Cors.Headers != null)
                     {
-                        builder.WithHeaders(settings.Cors.Headers.Split(';'));
+                        builder.WithHeaders(settings.Cors.Headers);
                     }
                     else
                     {
@@ -21,7 +21,7 @@ namespace AutoProxy.Api.Extensions
                     
                     if (settings.Cors.Methods != null)
                     {
-                        builder.WithMethods(settings.Cors.Methods.Split(';'));
+                        builder.WithMethods(settings.Cors.Methods);
                     }
                     else
                     {
@@ -30,7 +30,7 @@ namespace AutoProxy.Api.Extensions
                     
                     if (settings.Cors.Origins != null)
                     {
-                        builder.WithOrigins(settings.Cors.Origins.Split(';'));
+                        builder.WithOrigins(settings.Cors.Origins);
                     }
                     else
                     {

@@ -27,11 +27,11 @@ namespace AutoProxy.Api
     {
         public bool Enabled { get; set; }
 
-        public string Methods { get; set; }
+        public string[] Methods { get; set; }
 
-        public string Origins { get; set; }
+        public string[] Origins { get; set; }
 
-        public string Headers { get; set; }
+        public string[] Headers { get; set; }
 
         public bool Credentials { get; set; }
     }
