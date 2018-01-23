@@ -6,7 +6,7 @@ namespace AutoProxy.Api.Extensions
     {
         public static void ConfigureCors(this IApplicationBuilder app, AppSettings settings)
         {
-            if (settings.Cors.Enabled)
+            if (settings.Cors != null && settings.Cors.Enabled)
             {
                 app.UseCors(builder =>
                 {

@@ -32,6 +32,7 @@ namespace AutoProxy.Api.Extensions
                         {
                             handler.Credentials = new NetworkCredential(appSettings.Auth.User, appSettings.Auth.Password,
                                 appSettings.Auth.Domain);
+                            handler.UseDefaultCredentials = false;
                         }
                         httpClient = new HttpClient(handler);
                         break;

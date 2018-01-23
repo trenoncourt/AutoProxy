@@ -25,12 +25,12 @@ namespace AutoProxy.Api
             IWebHostBuilder builder = new WebHostBuilder()
                 .UseKestrel(options => options.AddServerHeader = false);
 
-            if (appSettings.Server.UseIIS)
+            if (appSettings.Server != null && appSettings.Server.UseIIS)
             {
                 builder.UseIISIntegration();
             }
 
-            if (!appSettings.Server.UseIIS && appSettings.Auth.UseImpersonation)
+            if (appSettings.Server != null && !appSettings.Server.UseIIS && appSettings.Auth != null && appSettings.Auth.UseImpersonation)
             {
                 builder.UseHttpSys(options =>
                 {
@@ -49,7 +49,7 @@ namespace AutoProxy.Api
                 })
                 .ConfigureServices(services =>
                 {
-                    if (appSettings.Cors.Enabled)
+                    if (appSettings.Cors != null && appSettings.Cors.Enabled)
                     {
                         services.AddCors();
                     }
@@ -74,7 +74,7 @@ namespace AutoProxy.Api
 
                         HttpResponseMessage response = null;
                         // Get response
-                        if (appSettings.Auth.UseImpersonation)
+                        if (appSettings.Auth != null && appSettings.Auth.UseImpersonation)
                         {
                             var user = (WindowsIdentity)context.User.Identity;
                             
