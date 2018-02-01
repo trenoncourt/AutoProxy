@@ -44,8 +44,7 @@ namespace AutoProxy.Api
             var host = builder
                 .ConfigureLogging(loggerFactory =>
                 {
-                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-                        loggerFactory.AddConsole();
+                    loggerFactory.AddConsole();
                 })
                 .ConfigureServices(services =>
                 {
@@ -67,7 +66,7 @@ namespace AutoProxy.Api
                         }
                         
                         // Create client with auth if needed
-                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings);
+                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings, context);
                         
                         // Create request
                         HttpRequestMessage request = context.Request.ToHttpRequestMessage(appSettings);

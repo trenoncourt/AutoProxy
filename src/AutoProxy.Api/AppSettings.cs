@@ -57,6 +57,10 @@ namespace AutoProxy.Api
                 {
                     return Api.AuthType.Ntlm;
                 }
+                if (Type.Equals("basicToNtlm", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Api.AuthType.BasicToNtlm;
+                }
                 return null;
             }
         }
@@ -75,6 +79,7 @@ namespace AutoProxy.Api
     public enum AuthType
     {
         Bearer,
-        Ntlm
+        Ntlm,
+        BasicToNtlm
     }
 }

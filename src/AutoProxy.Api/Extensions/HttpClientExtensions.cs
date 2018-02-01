@@ -1,12 +1,17 @@
-﻿using System.Net;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace AutoProxy.Api.Extensions
 {
     public static class HttpClientExtensions
     {
-        public static HttpClient GetWithAuth(AppSettings appSettings)
+        private const string BasicSheme = "Basic";
+
+        public static HttpClient GetWithAuth(AppSettings appSettings, HttpContext context)
         {
             HttpClient httpClient = null;
             if (appSettings.Auth != null)
@@ -35,6 +40,48 @@ namespace AutoProxy.Api.Extensions
                             handler.UseDefaultCredentials = false;
                         }
                         httpClient = new HttpClient(handler);
+                        break;
+                    case AuthType.BasicToNtlm:
+                        string authorizationHeader = context.Request.Headers["Authorization"];
+                        if (string.IsNullOrEmpty(authorizationHeader))
+                        {
+                            break;
+                            // todo logs
+                        }
+                        if (!authorizationHeader.StartsWith(BasicSheme + ' ', StringComparison.OrdinalIgnoreCase))
+                        {
+                            break;
+                            // todo logs
+                        }
+                        string encodedCredentials = authorizationHeader.Substring(BasicSheme.Length).Trim();
+                        if (string.IsNullOrEmpty(encodedCredentials))
+                        {
+                            break;
+                            // todo logs
+                        }
+                        string decodedCredentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+
+                        var delimiterIndex = decodedCredentials.IndexOf(':');
+                        if (delimiterIndex == -1)
+                        {
+                            break;
+                            // todo logs
+                        }
+
+                        var username = decodedCredentials.Substring(0, delimiterIndex);
+                        var password = decodedCredentials.Substring(delimiterIndex + 1);
+
+                        var basicToNtlmhandler = new HttpClientHandler();
+                        if (appSettings.Auth.UseImpersonation)
+                        {
+                            basicToNtlmhandler.UseDefaultCredentials = true;
+                        }
+                        else
+                        {
+                            basicToNtlmhandler.Credentials = new NetworkCredential(username, password, appSettings.Auth.Domain);
+                            basicToNtlmhandler.UseDefaultCredentials = false;
+                        }
+                        httpClient = new HttpClient(basicToNtlmhandler);
                         break;
                 }
             }
