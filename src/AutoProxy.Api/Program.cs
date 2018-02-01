@@ -44,6 +44,7 @@ namespace AutoProxy.Api
             var host = builder
                 .ConfigureLogging(loggerFactory =>
                 {
+                    loggerFactory.AddConfiguration(config.GetSection("Logging"));
                     loggerFactory.AddConsole();
                 })
                 .ConfigureServices(services =>
