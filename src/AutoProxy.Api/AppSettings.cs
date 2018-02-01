@@ -16,6 +16,8 @@ namespace AutoProxy.Api
         public ServerSettings Server { get; set; }
 
         public HeadersSettings Headers { get; set; }
+
+        public RequestSettings Request { get; set; }
     }
     
     public class ServerSettings
@@ -66,6 +68,10 @@ namespace AutoProxy.Api
                 {
                     return Api.AuthType.Ntlm;
                 }
+                if (Type.Equals("basicToNtlm", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Api.AuthType.BasicToNtlm;
+                }
                 return null;
             }
         }
@@ -81,9 +87,15 @@ namespace AutoProxy.Api
         public bool UseImpersonation { get; set; }
     }
 
+    public class RequestSettings
+    {
+        public int? RetryingTimes { get; set; }
+    }
+
     public enum AuthType
     {
         Bearer,
-        Ntlm
+        Ntlm,
+        BasicToNtlm
     }
 }

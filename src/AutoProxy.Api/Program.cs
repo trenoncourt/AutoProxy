@@ -44,8 +44,8 @@ namespace AutoProxy.Api
             var host = builder
                 .ConfigureLogging(loggerFactory =>
                 {
-                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-                        loggerFactory.AddConsole();
+                    loggerFactory.AddConfiguration(config.GetSection("Logging"));
+                    loggerFactory.AddConsole();
                 })
                 .ConfigureServices(services =>
                 {
@@ -60,6 +60,8 @@ namespace AutoProxy.Api
 
                     app.Run(async context =>
                     {
+                        ILogger logger = context.RequestServices.GetService<ILogger<Program>>();
+                        logger.LogDebug($"Request: {context.Request.Method} {context.Request.Host.Value}{(context.Request.Path.HasValue ? context.Request.Path.Value : "")}");
                         if (context.Request.IsInWhiteList(appSettings))
                         {
                             context.Response.StatusCode = 403;
@@ -67,7 +69,7 @@ namespace AutoProxy.Api
                         }
                         
                         // Create client with auth if needed
-                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings);
+                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings, context, logger);
                         
                         // Create request
                         HttpRequestMessage request = context.Request.ToHttpRequestMessage(appSettings);
@@ -86,6 +88,16 @@ namespace AutoProxy.Api
                         else
                         {
                             response = await client.SendAsync(request);
+                            logger.LogInformation($"End api response status: {response.StatusCode}");
+                            if (!response.IsSuccessStatusCode && appSettings.Request?.RetryingTimes != null)
+                            {
+                                for (int i = 1; i <= appSettings.Request.RetryingTimes && !response.IsSuccessStatusCode; i++)
+                                {
+                                    logger.LogInformation($"Retrying {i} time...");
+                                    request = context.Request.ToHttpRequestMessage(appSettings);
+                                    response = await client.SendAsync(request);
+                                }
+                            }
                         }
                         
                         
