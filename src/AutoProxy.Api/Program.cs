@@ -60,6 +60,8 @@ namespace AutoProxy.Api
 
                     app.Run(async context =>
                     {
+                        ILogger logger = context.RequestServices.GetService<ILogger<Program>>();
+                        logger.LogDebug($"Request: {context.Request.Method} {context.Request.Host.Value}{(context.Request.Path.HasValue ? context.Request.Path.Value : "")}");
                         if (context.Request.IsInWhiteList(appSettings))
                         {
                             context.Response.StatusCode = 403;
@@ -67,7 +69,7 @@ namespace AutoProxy.Api
                         }
                         
                         // Create client with auth if needed
-                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings, context);
+                        HttpClient client = HttpClientExtensions.GetWithAuth(appSettings, context, logger);
                         
                         // Create request
                         HttpRequestMessage request = context.Request.ToHttpRequestMessage(appSettings);

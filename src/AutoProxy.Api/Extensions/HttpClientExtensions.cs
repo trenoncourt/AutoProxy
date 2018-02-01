@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -11,7 +12,7 @@ namespace AutoProxy.Api.Extensions
     {
         private const string BasicSheme = "Basic";
 
-        public static HttpClient GetWithAuth(AppSettings appSettings, HttpContext context)
+        public static HttpClient GetWithAuth(AppSettings appSettings, HttpContext context, ILogger logger)
         {
             HttpClient httpClient = null;
             if (appSettings.Auth != null)
@@ -72,15 +73,9 @@ namespace AutoProxy.Api.Extensions
                         var password = decodedCredentials.Substring(delimiterIndex + 1);
 
                         var basicToNtlmhandler = new HttpClientHandler();
-                        if (appSettings.Auth.UseImpersonation)
-                        {
-                            basicToNtlmhandler.UseDefaultCredentials = true;
-                        }
-                        else
-                        {
-                            basicToNtlmhandler.Credentials = new NetworkCredential(username, password, appSettings.Auth.Domain);
-                            basicToNtlmhandler.UseDefaultCredentials = false;
-                        }
+                        logger.LogInformation($"AUTH - Basic to ntlm - credentials : {username} - {password}");
+                        basicToNtlmhandler.Credentials = new NetworkCredential(username, password, appSettings.Auth.Domain);
+                        basicToNtlmhandler.UseDefaultCredentials = false;
                         httpClient = new HttpClient(basicToNtlmhandler);
                         break;
                 }
