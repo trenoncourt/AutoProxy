@@ -88,6 +88,16 @@ namespace AutoProxy.Api
                         else
                         {
                             response = await client.SendAsync(request);
+                            logger.LogInformation($"End api response status: {response.StatusCode}");
+                            if (!response.IsSuccessStatusCode && appSettings.Request?.RetryingTimes != null)
+                            {
+                                for (int i = 1; i <= appSettings.Request.RetryingTimes && !response.IsSuccessStatusCode; i++)
+                                {
+                                    logger.LogInformation($"Retrying {i} time...");
+                                    request = context.Request.ToHttpRequestMessage(appSettings);
+                                    response = await client.SendAsync(request);
+                                }
+                            }
                         }
                         
                         
