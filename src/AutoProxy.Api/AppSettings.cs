@@ -39,6 +39,15 @@ namespace AutoProxy.Api
     public class HeadersSettings
     {
         public IEnumerable<string> Remove { get; set; }
+
+        public IEnumerable<ReplaceHeadersSettings> Replace { get; set; }
+    }
+
+    public class ReplaceHeadersSettings
+    {
+        public string Key { get; set; }
+
+        public string Value { get; set; }
     }
 
     public class AuthSettings

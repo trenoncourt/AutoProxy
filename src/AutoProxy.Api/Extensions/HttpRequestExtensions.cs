@@ -51,16 +51,25 @@ namespace AutoProxy.Api.Extensions
             }
             
             var httpRequestMesage = new HttpRequestMessage(new HttpMethod(request.Method), url);
-            
+
             httpRequestMesage.Headers.Clear();
             foreach (var header in request.Headers)
             {
-                if (appSettings.Headers.Remove != null &&  
+                if (appSettings.Headers.Remove != null &&
                     appSettings.Headers.Remove.Contains(header.Key))
                     continue;
+                if (appSettings.Headers.Replace != null)
+                {
+                    var replaceHeader = appSettings.Headers.Replace.FirstOrDefault(h => h.Key == header.Key);
+                    if (replaceHeader != null)
+                    {
+                        httpRequestMesage.Headers.TryAddWithoutValidation(header.Key, replaceHeader.Value.ToString());
+                        continue;
+                    }
+                }
                 httpRequestMesage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToString());
             }
-            
+
             if (request.ContentLength != null && request.ContentLength > 0)
             {
                 request.EnableRewind();
