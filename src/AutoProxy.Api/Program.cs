@@ -6,6 +6,7 @@ using System.Security.Principal;
 using AutoProxy.Api.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -60,6 +61,11 @@ namespace AutoProxy.Api
 
                     app.Run(async context =>
                     {
+                        if (appSettings.Cors != null && appSettings.Cors.Enabled && context.Request.Method == "Options")
+                        {
+                            return;
+                        }
+                        
                         ILogger logger = context.RequestServices.GetService<ILogger<Program>>();
                         logger.LogDebug($"Request: {context.Request.Method} {context.Request.Host.Value}{(context.Request.Path.HasValue ? context.Request.Path.Value : "")}");
                         if (context.Request.IsInWhiteList(appSettings))
@@ -83,6 +89,7 @@ namespace AutoProxy.Api
                             WindowsIdentity.RunImpersonated(user.AccessToken, () =>
                             {
                                 response = client.SendAsync(request).GetAwaiter().GetResult();
+                                client.Dispose();
                             });
                         }
                         else
@@ -98,12 +105,12 @@ namespace AutoProxy.Api
                                     response = await client.SendAsync(request);
                                 }
                             }
+                            client.Dispose();
                         }
                         
                         
                         // Forward response to client
                         await context.Response.SetResponse(response);
-                        client.Dispose();
                     });
                 })
                 .Build();
