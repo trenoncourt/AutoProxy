@@ -2,8 +2,13 @@
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading.Tasks;
+using AutoProxy.Api.Auth.Basic;
+using AutoProxy.Api.Auth.Basic.Events;
 using AutoProxy.Api.Extensions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -54,16 +59,27 @@ namespace AutoProxy.Api
                     {
                         services.AddCors();
                     }
+                    services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+                        .AddBasic(options =>
+                        {
+                            options.Realm = "";
+                            options.AllowInsecureProtocol = true;
+                        });
                 })
                 .Configure(app =>
                 {
                     app.ConfigureCors(appSettings);
-
+                    app.UseAuthentication();
                     app.Run(async context =>
                     {
                         if (appSettings.Cors != null && appSettings.Cors.Enabled && context.Request.Method == "Options")
                         {
                             return;
+                        }
+
+                        if (appSettings.Auth?.AuthType == AuthType.BasicToNtlm && string.IsNullOrEmpty(context.Request.Headers["Authorization"]))
+                        {
+                            await context.ChallengeAsync();
                         }
                         
                         ILogger logger = context.RequestServices.GetService<ILogger<Program>>();
