@@ -1,79 +1,99 @@
-# AutoProxy
-> Proxy another api in 30 seconds from configuration
+# AutoProxy &middot; [![NuGet](https://img.shields.io/nuget/vpre/AutoProxy.AspNetCore.svg?style=flat-square)](https://www.nuget.org/packages/AutoProxy.AspNetCore) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/trenoncourt/AutoProxy/blob/master/LICENSE) [![Donate](	https://img.shields.io/beerpay/hashdog/scrapfy-chrome-extension.svg?style=flat-square)](https://www.paypal.me/trenoncourt/5)
+> Proxy another api in 30 seconds from configuration.
 
 AutoProxy is a drop-in microservice for proxying another api from configuration with headers forwarding, auth, cors, impersonation and more...
 
-Just add simple json or environment based configuration like this:
-```json
-{
-  "BaseUrl": "http://192.168.1.42",
-  "Cors": {
-    "Enabled": true
-  },
-  "Auth": {
-    "Type": "ntlm",
-    "UseImpersonation": true
-  }
-}
-```
- And drop the folder on your server. It can be drop in IIS, nginx and more.
- 
-## Deployment
-Download the [last release]() and place it on your server and add your configuration.
+You can also use AutoProxy as a middleware in your aspnet core app.
 
-You can download previous versions [here]()
+## Installation
+Choose between middleware or microservice
+
+### Middleware
+```Powershell
+Install-Package AutoProxy.AspNetCore
+```
+
+### Microservice
+Download the [last release](https://github.com/trenoncourt/AutoProxy/releases), drop it to your server and that's it!
 
 ## Configuration
-All the configuration can be made in environment variable or appsettings.json file :
+All the configuration can be made in environment variable or appsettings.json file
 
-| Name              	| Description                                   | Type        | Default value |
-| --------------------- | --------------------------------------------- | ----------- |--------------:|
-| **Logging**       	| Log settings, see aspnet core doc    			| Object      |               |
-| BaseUrl\*     		| Base url to proxy			                    | String 	  | 	          |
-| WhiteList     		| List of endpoint to accept (regex capable)	| String 	  | 	          |
-| **Cors**          	| Cors settings                                 | Object      |               |
-| Cors.Enabled      	| Define if cors are enabled                    | Boolean     | false         |
-| Cors.Methods      	| Add specific methods to the policy            | String      | *             |
-| Cors.Origins      	| Add specific origins to the policy            | String      | *             |
-| Cors.Headers      	| Add specific headers to the policy            | String      | *             |
-| Cors.Credentials  	| Add credentials to the policy      		    | String      | true          |
-| **Auth**          	| Auth settings                                 | Object      |               |
-| Auth.Type         	| (bearer or ntlm)			                    | String      |               |
-| Auth.User         	| The user name for ntlm auth                   | String      |               |
-| Auth.Password     	| The password for ntlm auth                    | String      |               |
-| Auth.Domain        	| The domain for ntlm auth                      | String      |               |
-| Auth.UseImpersonation | True to Forward ntlm token 				    | Boolean     | false         |
-| Auth.Token		    | Token for bearer auth 					    | String      |               |
-| **Server**          	| Server settings                               | Object      |               |
-| Server.UseIIS		    | Enable iisIntegration		                    | Boolean     | false         |
-| **Headers**          	| Headers settings                              | Object      |               |
-| Headers.Remove		| List of headers disable in forwarding         | Array       | 	          |
-
-Exemple of appsettings.json
+Just add simple json or environment based configuration like this:
 ```json
-{
-  "Logging": {
-    "IncludeScopes": false,
-    "LogLevel": {
-      "Default": "Warning"
+"AutoProxy": {
+  "Path": "proxy",
+  "Proxies": [
+    {
+      "Name": "DuckDuck", // Required
+      "BaseUrl": "https://duckduckgo.com/", // Required
+      "Path": "proxy1",
+      "WhiteList": "https://duckduckgo.com/api/(.*)", // Regex capable
+      "Auth": {
+        "Type": "Ntlm", // (Ntlm, Bearer or BasicToNtlm)
+        "UseImpersonation": false,
+        "User": "Jhon",
+        "Password": "Doe",
+        "Domain": "DoeCorp",
+        "LogPassword": true // To log password with serilog
+      },
+      "Headers": {
+        "Remove": [ "Origin", "Host" ],
+        "Replace": [
+          {
+            "Key":  "Host",
+            "Value": "duckduckgo.com"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+You can add multiple proxies with different path, the path for the first proxy is not required.
+ 
+## Api configuration
+### Cors
+```json
+"Cors": {
+  "Enabled": true, // default is false
+  "Methods": "...", // default is *
+  "Origins": "...", // default is *
+  "Headers": "...", // default is *
+}
+```
+
+### Host
+Currently only chose to use IIS integration
+```json
+"Host": {
+  "UseIis": true
+}
+```
+
+### Kestrel
+Kestrel options, see [ms doc](https://docs.microsoft.com/fr-fr/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserveroptions) for usage
+```json
+"Kestrel": {
+  "AddServerHeader": false
+}
+```
+
+### Serilog
+storfiler use Serilog for logging, see [serilog-settings-configuration](https://github.com/serilog/serilog-settings-configuration) for usage
+```json
+"Serilog": {
+  "MinimumLevel": {
+    "Default": "Debug",
+    "Override": {
+      "Microsoft": "Warning",
+      "System": "Warning"
     }
   },
-  "WhiteList": "http://192.168.1.42/api/(.*)",
-  "BaseUrl": "http://192.168.1.42",
-  "Cors": {
-    "Enabled": true
-  },
-  "Auth": {
-    "Type": "ntlm",
-    "UseImpersonation": true
-  },
-  "Server": {
-    "UseIIS": true
-  },
-  "Headers": {
-    "Remove": [
-      "Host"
-    ]
-  }
+  "WriteTo": [
+    { "Name": "Console" }
+  ],
+  "Enrich": ["FromLogContext"]
 }
 ```
