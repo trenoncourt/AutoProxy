@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup Label="Build">
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <TieredCompilation>true</TieredCompilation>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Package">
+        <Version>2.0.0</Version>
+        <Authors>Thibaut Renoncourt</Authors>
+        <Company>Renoncourt</Company>
+        <Product>AutoProxy</Product>
+        <Description>Proxy another api in 30 seconds from configuration.</Description>
+        <Copyright>Copyright © Thibaut Renoncourt. All rights Reserved</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup Label="Package References">
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
+      <PackageReference Include="System.Security.Principal.Windows" Version="4.5.1" />
+    </ItemGroup>
+
+</Project>

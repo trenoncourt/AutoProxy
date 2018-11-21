@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace AutoProxy.Api.Extensions
+namespace AutoProxy.AspNetCore.Extensions
 {
     public static class HttpResponseExtensions
     {

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 
-namespace AutoProxy.Api.Extensions
+namespace AutoProxy.AspNetCore.Extensions
 {
     public static class HttpRequestExtensions
     {
@@ -20,10 +20,10 @@ namespace AutoProxy.Api.Extensions
             return path;
         }
         
-        public static bool IsInWhiteList(this HttpRequest request, AppSettings appSettings)
+        public static bool IsInWhiteList(this HttpRequest request, ProxySettings settings)
         {
-            return (appSettings.WhiteList != null 
-                    && !appSettings.WhiteList.Split(';')
+            return (settings.WhiteList != null 
+                    && !settings.WhiteList.Split(';')
                         .Any(template => Regex.IsMatch(request.GetPath(), template)));
         }
         
@@ -39,9 +39,9 @@ namespace AutoProxy.Api.Extensions
             return null;
         }
         
-        public static HttpRequestMessage ToHttpRequestMessage(this HttpRequest request, AppSettings appSettings)
+        public static HttpRequestMessage ToHttpRequestMessage(this HttpRequest request, ProxySettings settings)
         {
-            var fullPath = new Uri(new Uri(appSettings.BaseUrl), request.GetPath());
+            var fullPath = new Uri(new Uri(settings.BaseUrl), request.GetPath());
 
             // Prepare builder.
             var url = fullPath.AbsoluteUri;
@@ -55,17 +55,14 @@ namespace AutoProxy.Api.Extensions
             httpRequestMesage.Headers.Clear();
             foreach (var header in request.Headers)
             {
-                if (appSettings.Headers.Remove != null &&
-                    appSettings.Headers.Remove.Contains(header.Key))
+                if (settings?.Headers?.Remove != null &&
+                    settings.Headers.Remove.Contains(header.Key))
                     continue;
-                if (appSettings.Headers.Replace != null)
+                var replaceHeader = settings?.Headers?.Replace?.FirstOrDefault(h => h.Key == header.Key);
+                if (replaceHeader != null)
                 {
-                    var replaceHeader = appSettings.Headers.Replace.FirstOrDefault(h => h.Key == header.Key);
-                    if (replaceHeader != null)
-                    {
-                        httpRequestMesage.Headers.TryAddWithoutValidation(header.Key, replaceHeader.Value.ToString());
-                        continue;
-                    }
+                    httpRequestMesage.Headers.TryAddWithoutValidation(header.Key, replaceHeader.Value.ToString());
+                    continue;
                 }
                 httpRequestMesage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToString());
             }
