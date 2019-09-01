@@ -16,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup Label="Package References">
+      <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.1.1" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
