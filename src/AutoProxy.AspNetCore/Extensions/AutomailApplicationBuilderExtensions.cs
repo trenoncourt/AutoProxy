@@ -23,7 +23,7 @@ namespace AutoProxy.AspNetCore.Extensions
                         {
                             var loggerFactory = context.RequestServices.GetService<ILoggerFactory>();
                             ILogger logger = loggerFactory.CreateLogger("AutoProxyApplicationBuilderExtensions");
-                            logger.LogDebug($"Request: {context.Request.Method} {context.Request.Host.Value}{(context.Request.Path.HasValue ? context.Request.Path.Value : "")}");
+                            logger.LogDebug($"Request: {context.Request.Method} {context.Request.Host.Value}{(context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "")}{(context.Request.Path.HasValue ? context.Request.Path.Value : "")}");
                             if (context.Request.Method == HttpMethod.Options.Method)
                             {
                                 return;
@@ -48,6 +48,7 @@ namespace AutoProxy.AspNetCore.Extensions
 
                             // Create request
                             HttpRequestMessage request = context.Request.ToHttpRequestMessage(proxy);
+                            logger.LogDebug($"Proxy Request: {request.Method} {request.RequestUri}");
 
                             HttpResponseMessage response = null;
                             // Get response
