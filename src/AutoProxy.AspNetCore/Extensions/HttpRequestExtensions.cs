@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 
 namespace AutoProxy.AspNetCore.Extensions
 {
@@ -19,29 +19,31 @@ namespace AutoProxy.AspNetCore.Extensions
 
             return path;
         }
-        
+
         public static bool IsInWhiteList(this HttpRequest request, ProxySettings settings)
         {
-            return (settings.WhiteList != null 
+            return (settings.WhiteList != null
                     && !settings.WhiteList.Split(';')
                         .Any(template => Regex.IsMatch(request.GetPath(), template)));
         }
-        
+
         public static HttpContent GetContent(this HttpRequest request)
         {
             if (request.Body.CanSeek)
             {
-                request.EnableRewind();
+                request.EnableBuffering();
                 var streamContent = new StreamContent(request.Body);
                 streamContent.Headers.ContentLength = request.ContentLength;
             }
 
             return null;
         }
-        
+
         public static HttpRequestMessage ToHttpRequestMessage(this HttpRequest request, ProxySettings settings)
         {
-            var fullPath = new Uri(new Uri(settings.BaseUrl), request.GetPath());
+            var baseUrl = new Uri(settings.BaseUrl);
+            var requestingPath = !string.IsNullOrEmpty(baseUrl.AbsolutePath.Trim('/')) ? Path.Join(baseUrl.AbsolutePath, request.GetPath()) : request.GetPath();
+            var fullPath = new Uri(baseUrl, requestingPath);
 
             // Prepare builder.
             var url = fullPath.AbsoluteUri;
@@ -49,7 +51,7 @@ namespace AutoProxy.AspNetCore.Extensions
             {
                 url += request.QueryString.Value;
             }
-            
+
             var httpRequestMesage = new HttpRequestMessage(new HttpMethod(request.Method), url);
 
             httpRequestMesage.Headers.Clear();
@@ -69,7 +71,7 @@ namespace AutoProxy.AspNetCore.Extensions
 
             if (request.ContentLength != null && request.ContentLength > 0)
             {
-                request.EnableRewind();
+                request.EnableBuffering();
                 httpRequestMesage.Content = new StreamContent(request.Body);
                 httpRequestMesage.Content.Headers.ContentLength = request.ContentLength;
                 if (!string.IsNullOrEmpty(request.ContentType))

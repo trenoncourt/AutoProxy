@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup Label="Build">
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <LangVersion>latest</LangVersion>
         <TieredCompilation>true</TieredCompilation>
     </PropertyGroup>
@@ -16,14 +16,14 @@
     </PropertyGroup>
 
     <ItemGroup Label="Package References">
-      <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.1.1" />
-      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
-      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.1" />
-      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
-      <PackageReference Include="System.Security.Principal.Windows" Version="4.5.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+      <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
     </ItemGroup>
 
 </Project>
